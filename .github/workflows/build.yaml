@@ -19,7 +19,15 @@ on:
 
 jobs:
   build:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
     steps:
-      - name: Placeholder
-        run: echo "Hello, CAS3135 - build"
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: build docker images
+        run: |
+          (cd backend && docker build -t calc-be:latest .)
+          (cd frontend && npm ci && npm run build)
+          (cd frontedn && docker build -t calc-fe:latest .)
