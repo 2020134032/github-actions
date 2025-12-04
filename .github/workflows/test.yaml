@@ -28,4 +28,21 @@ jobs:
       - name: Backend unit Tests
         run : |
           (cd backend && npm test)
-
+  backend_basic_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Nodejs 22.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.x'
+      - name: install dependencies
+        run: |
+          (cd backend && npm ci)
+      - name: health check on Local Dev run
+        run: |
+          cd backend
+          npm run dev &
+          sleep 5
+          curl --fail "https;//localhost:8080/healthcheck"
