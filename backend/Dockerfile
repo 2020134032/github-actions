@@ -9,7 +9,7 @@ RUN mkdir src
 COPY ./src/*.js ./src
 
 ENV PORT=3031 \
-    CORS_ALLOWED_ORIGIN="http://localhost:30030"
+    FRONTEND_URL="http://localhost:30030"
 
 EXPOSE 3031
 
