@@ -5,6 +5,8 @@ WORKDIR /var/app
 RUN npm install -g serve
 COPY build ./build
 
+ENV REACT_APP_BACKEND_URL="http://localhost:30031"
+
 EXPOSE 3000
 
 COPY docker-entrypoint.sh /usr/local/bin
