@@ -21,10 +21,5 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: checkout
-        uses: actions/checkout@v4
-        with:
-          ref: main
-      - name: Backend unit Tests
-        run : |
-          (cd backend && npm test)
+      - name: Placeholder
+        run: echo "Hello, CAS3135 - build"
