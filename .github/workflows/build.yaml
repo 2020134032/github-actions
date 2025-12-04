@@ -30,4 +30,4 @@ jobs:
         run: |
           (cd backend && docker build -t calc-be:latest .)
           (cd frontend && npm ci && npm run build)
-          (cd frontedn && docker build -t calc-fe:latest .)
+          (cd frontend && docker build -t calc-fe:latest .)
