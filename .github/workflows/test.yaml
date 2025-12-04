@@ -45,4 +45,4 @@ jobs:
           cd backend
           npm run dev &
           sleep 5
-          curl --fail "https://localhost:8080/healthcheck"
+          curl --fail "http://localhost:8080/healthcheck"
