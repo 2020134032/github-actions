@@ -31,3 +31,18 @@ jobs:
           (cd backend && docker build -t calc-be:latest .)
           (cd frontend && npm ci && npm run build)
           (cd frontend && docker build -t calc-fe:latest .)
+      - name: health check for built images
+        run: |
+          docker run -d -p 8000:3031 --name test-be calc-be:latest
+          docker run -d -p 9000:3000 --name test-fe calc-fe:latest
+          sleep 5
+          curl --fail "http://localhost:8000/healthcheck" || exit 1
+          curl --fail "http://localhost:9000" || exit 1
+      - name : Stop and remove test containers
+        if: always()
+        run: |
+          docker stop test-be
+          docker stop test-fe
+          docker rm test-be
+          docker rm test-fe
+
