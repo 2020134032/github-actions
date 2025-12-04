@@ -1,0 +1,21 @@
+{
+  "name": "calc-backend",
+  "version": "1.0.0",
+  "description": "A demo project calculating the Fibonacci number and factorial",
+  "main": "./src/app.js",
+  "scripts": {
+    "test": "node --test ./tests/*.test.mjs",
+    "dev": "ENV=development node src/app.js"
+  },
+  "author": "Sheayun Lee",
+  "license": "ISC",
+  "type": "module",
+  "imports": {
+    "#src/*.js": "./src/*.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "serverless-http": "^3.2.0"
+  }
+}

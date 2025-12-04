@@ -1,0 +1,25 @@
+name: Calc App CI Pipeline
+
+on:
+  workflow_run:
+    workflows: ["Calc App Unit Tests"]
+    types:
+      - completed
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log Level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "Hello, CAS3135 - build"

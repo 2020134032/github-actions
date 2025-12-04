@@ -1,0 +1,25 @@
+name: Calc App Unit Tests
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+    inputs:
+      logLevel:
+        description: 'Log Level'
+        required: true
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+
+jobs:
+  unit_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Placeholder
+        run: echo "Hello, CAS3135 - unit tests"
