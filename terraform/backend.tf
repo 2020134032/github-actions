@@ -27,6 +27,7 @@ resource "kubernetes_secret" "aws_ecr_cred" {
 		}
 	})
   }
+}
 
 resource "kubernetes_deployment" "backend" {
 	metadata {

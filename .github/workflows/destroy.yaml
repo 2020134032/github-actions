@@ -1,0 +1,58 @@
+name: Destroy AWS Resources
+
+on:
+  workflow_dispatch: # Manual trigger only
+
+permissions:
+  id-token: write   # Required for AWS OIDC authentication
+  contents: read    # Required to checkout code
+
+jobs:
+  destroy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. Checkout Code
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # 2. Configure AWS Credentials
+      # We need this to access the S3 State bucket and ECR to delete/detach resources
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          # Use the same Role ARN as in your deploy.yaml
+          role-to-assume: arn:aws:iam::975049962487:role/cas3135-2020134032-gha-role
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-terraform-destroy
+
+      # 3. Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.6
+
+      # 4. Setup Kubeconfig
+      # Terraform needs to connect to the cluster to delete the k8s resources (Deployments, Services)
+      - name: Setup Kubeconfig
+        env:
+          KUBECONFIG_BASE64: ${{ secrets.KUBECONFIG_BASE64 }}
+        run: |
+          echo "${KUBECONFIG_BASE64}" | base64 --decode > /tmp/kubeconfig
+          echo "TF_VAR_kubernetes_config_path=/tmp/kubeconfig" >> ${GITHUB_ENV}
+
+      # 5. Setup Terraform Variables (Crucial!)
+      # Terraform will ERROR if any variable defined in variables.tf is missing, 
+      # even if you are just destroying. We pass dummy values for images since they don't matter for destruction.
+      - name: Setup Terraform Variables
+        run: |
+          echo "TF_VAR_backend_url=${{ vars.BACKEND_URL }}" >> ${GITHUB_ENV}
+          echo "TF_VAR_frontend_url=${{ vars.FRONTEND_URL }}" >> ${GITHUB_ENV}
+          echo "TF_VAR_container_image_be=destroy-placeholder" >> ${GITHUB_ENV}
+          echo "TF_VAR_container_image_fe=destroy-placeholder" >> ${GITHUB_ENV}
+
+      # 6. Terraform Init & Destroy
+      - name: Terraform Destroy
+        run: |
+          cd terraform
+          terraform init
+          terraform destroy -auto-approve

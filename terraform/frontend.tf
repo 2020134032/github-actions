@@ -16,12 +16,12 @@ resource "kubernetes_deployment" "frontend" {
           run = "calc-frontend"
         }
       }
-      # NEW: allow pulling from private ECR
-      image_pull_secrets {
-        name = "aws-ecr-cred" # References the same secret created in backend.tf
-      }
 
       spec {
+        # NEW: allow pulling from private ECR
+        image_pull_secrets {
+          name = "aws-ecr-cred" # References the same secret created in backend.tf
+        }
         container {
           name = "frontend"
           image = var.container_image_fe
