@@ -16,6 +16,10 @@ on:
           - info
           - warning
           - debug
+permissions:
+  id-token: write
+  contents: read
+  # for AWS OICD
 
 jobs:
   build:
@@ -26,6 +30,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: main
+
+      # Configure AWS Credentials using OIDC Uses settings from your provided deploy.yaml
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::975049962487:role/cas3135-2020134032-gha-role
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: gha-terraform
+      - name: Verify caller identity
+        run: aws sts get-caller-identity
+
       - name: build docker images
         run: |
           (cd backend && docker build -t calc-be:latest .)
@@ -45,4 +60,39 @@ jobs:
           docker stop test-fe
           docker rm test-be
           docker rm test-fe
+      - name: Image Push
+        run: |
+          # 1. Generate a timestamp version tag
+          VERSION_TAG=$(date +'%Y%m%d-%H%M%S')
+
+          # 2. Construct the ECR Registry URI
+          REGISTRY_URI=${{ secrets.ECR_ACCOUNT_ID }}.dkr.ecr.${{ vars.AWS_REGION }}.amazonaws.com
+
+          # 3. Define full Image URIs using Repository Variables
+          IMAGE_URI_BE=${REGISTRY_URI}/${{ vars.ECR_REPOSITORY_BE }}:${VERSION_TAG}
+          IMAGE_URI_FE=${REGISTRY_URI}/${{ vars.ECR_REPOSITORY_FE }}:${VERSION_TAG}
+
+          # 4. Tag the local images to match the ECR URIs
+          docker tag calc-be:latest ${IMAGE_URI_BE}
+          docker tag calc-fe:latest ${IMAGE_URI_FE}
+
+          # 5. Login to AWS ECR
+          aws ecr get-login-password | docker login --username AWS --password-stdin ${REGISTRY_URI}
+
+          # 6. Push images
+          docker push ${IMAGE_URI_BE}
+          docker push ${IMAGE_URI_FE}
+
+          # 7. Save the URIs to text files for the Deployment pipeline
+          echo "${IMAGE_URI_BE}" > image_uri_be.txt
+          echo "${IMAGE_URI_FE}" > image_uri_fe.txt
+
+      # [NEW] Upload Artifacts for CD Pipeline
+      - name: Upload Image URI Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-uris
+          path: |
+            image_uri_be.txt
+            image_uri_fe.txt
 
